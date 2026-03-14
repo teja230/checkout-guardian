@@ -1,9 +1,41 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getRuns } from "@/lib/api";
+
+// Maps bug failure_type to the bug IDs used in active_bugs
+const BUG_TYPE_TO_ID: Record<string, string> = {
+  promotion_state_bug: "promo_key_mismatch",
+  address_validation_bug: "zip_leading_zero",
+  pricing_mismatch: "pickup_shipping_fee",
+  inventory_reservation_failure: "inventory_stale_cache",
+  payment_gateway_timeout: "payment_504",
+};
 
 export default function LandingPage() {
   const router = useRouter();
+  const [demoRuns, setDemoRuns] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    getRuns()
+      .then((runs: any[]) => {
+        // Map each bug type to the most recent failed run containing that bug
+        const mapping: Record<string, string> = {};
+        for (const [failureType, bugId] of Object.entries(BUG_TYPE_TO_ID)) {
+          const match = runs.find(
+            (r: any) =>
+              r.status === "failed" &&
+              r.active_bugs?.includes(bugId)
+          );
+          if (match) {
+            mapping[failureType] = match.id;
+          }
+        }
+        setDemoRuns(mapping);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
@@ -70,13 +102,13 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Bug catalog teaser */}
+      {/* Bug catalog */}
       <section className="max-w-5xl mx-auto px-4 py-16">
         <h2 className="text-2xl font-bold text-white text-center mb-4">
           Seeded Bug Catalog
         </h2>
         <p className="text-slate-400 text-center mb-10 max-w-xl mx-auto">
-          Toggle real-world checkout bugs to see how Guardian detects and triages them.
+          Real-world checkout bugs Guardian has detected and triaged. Click to see the full run and AI diagnosis.
         </p>
         <div className="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto">
           {[
@@ -105,26 +137,37 @@ export default function LandingPage() {
               type: "payment_gateway_timeout",
               severity: "Critical",
             },
-          ].map((bug) => (
-            <div
-              key={bug.type}
-              className="flex items-center justify-between p-4 rounded-lg bg-slate-800/50 border border-slate-700/50"
-            >
-              <div>
-                <div className="text-sm font-medium text-white">{bug.name}</div>
-                <div className="text-xs text-slate-500 font-mono">{bug.type}</div>
-              </div>
-              <span
-                className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                  bug.severity === "Critical"
-                    ? "bg-red-500/10 text-red-400"
-                    : "bg-yellow-500/10 text-yellow-400"
-                }`}
+          ].map((bug) => {
+            const runId = demoRuns[bug.type];
+            return (
+              <button
+                key={bug.type}
+                onClick={() =>
+                  router.push(runId ? `/runs/${runId}` : "/scenarios")
+                }
+                className="flex items-center justify-between p-4 rounded-lg bg-slate-800/50 border border-slate-700/50 hover:bg-slate-700/50 hover:border-slate-600/50 transition-colors cursor-pointer text-left w-full group"
               >
-                {bug.severity}
-              </span>
-            </div>
-          ))}
+                <div>
+                  <div className="text-sm font-medium text-white">{bug.name}</div>
+                  <div className="text-xs text-slate-500 font-mono">{bug.type}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                      bug.severity === "Critical"
+                        ? "bg-red-500/10 text-red-400"
+                        : "bg-yellow-500/10 text-yellow-400"
+                    }`}
+                  >
+                    {bug.severity}
+                  </span>
+                  <span className="text-slate-600 group-hover:text-slate-400 transition-colors">
+                    &rarr;
+                  </span>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </section>
 
