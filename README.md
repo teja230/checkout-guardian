@@ -118,6 +118,11 @@ When a run fails, the API calls **Amazon Nova 2 Lite** (`us.amazon.nova-2-lite-v
 
 It returns structured JSON with root cause, confidence, repro steps, suggested fix, and a Jira-ready bug report.
 
+## Screenshots
+
+![Home Page](Home%20Page.png)
+![Sample Run](Sample%20Run.png)
+
 **Requirements:**
 - AWS credentials configured with Bedrock access (`aws configure` or env vars)
 - The `us.amazon.nova-2-lite-v1:0` model enabled in your Bedrock console (us-east-1)
