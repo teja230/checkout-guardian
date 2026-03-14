@@ -1,0 +1,80 @@
+{
+  "id": "promo-code-bug",
+  "name": "Promo Code Disappears at Payment",
+  "description": "Apply a promo code during cart review, then proceed to payment. The promo code discount disappears due to a state key mismatch between cart and payment contexts.",
+  "steps": [
+    {
+      "index": 0,
+      "name": "Add item to cart",
+      "action": "navigate_and_click",
+      "target": "product page → Add to Cart",
+      "nova_act_prompt": "Go to the product page for 'Wireless Bluetooth Headphones' and click 'Add to Cart'",
+      "expected": "Item added to cart"
+    },
+    {
+      "index": 1,
+      "name": "Open cart",
+      "action": "click",
+      "target": "cart icon",
+      "nova_act_prompt": "Click the cart icon",
+      "expected": "Cart page opens"
+    },
+    {
+      "index": 2,
+      "name": "Apply promo code",
+      "action": "fill_and_click",
+      "target": "promo code input + Apply button",
+      "nova_act_prompt": "Type 'SAVE20' into the promo code field and click 'Apply'",
+      "expected": "20% discount applied, new total shown"
+    },
+    {
+      "index": 3,
+      "name": "Proceed to checkout",
+      "action": "click",
+      "target": "Proceed to Checkout",
+      "nova_act_prompt": "Click 'Proceed to Checkout'",
+      "expected": "Checkout page loads with discount still applied"
+    },
+    {
+      "index": 4,
+      "name": "Fill shipping address",
+      "action": "fill_form",
+      "target": "shipping form",
+      "nova_act_prompt": "Fill shipping: Jane Smith, 456 Oak Ave, Portland, OR 97201",
+      "expected": "Address filled"
+    },
+    {
+      "index": 5,
+      "name": "Enter payment details",
+      "action": "fill_form",
+      "target": "payment form",
+      "nova_act_prompt": "Enter card 4111111111111111, expiry 12/27, CVV 456",
+      "expected": "Payment form filled"
+    },
+    {
+      "index": 6,
+      "name": "Verify discount on review",
+      "action": "verify",
+      "target": "order summary discount line",
+      "nova_act_prompt": "Check that the order summary still shows the SAVE20 promo discount",
+      "expected": "Discount line present showing -20%"
+    },
+    {
+      "index": 7,
+      "name": "Place order",
+      "action": "click",
+      "target": "Place Order",
+      "nova_act_prompt": "Click 'Place Order'",
+      "expected": "Order placed with discounted total"
+    }
+  ],
+  "seeded_bugs": [
+    {
+      "id": "promo_key_mismatch",
+      "name": "Promo code state key mismatch",
+      "description": "Cart stores discount under 'promoCode' but payment reads from 'couponCode', causing the discount to silently drop",
+      "trigger_step": 6,
+      "failure_type": "promotion_state_bug"
+    }
+  ]
+}

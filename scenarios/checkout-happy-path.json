@@ -1,0 +1,72 @@
+{
+  "id": "checkout-happy-path",
+  "name": "Standard Checkout – Happy Path",
+  "description": "Complete checkout flow with valid card, standard shipping, no promo code. Expects order confirmation.",
+  "steps": [
+    {
+      "index": 0,
+      "name": "Add item to cart",
+      "action": "navigate_and_click",
+      "target": "product page → Add to Cart button",
+      "nova_act_prompt": "Go to the product page for 'Wireless Bluetooth Headphones' and click the 'Add to Cart' button",
+      "expected": "Item appears in cart with quantity 1"
+    },
+    {
+      "index": 1,
+      "name": "Open cart",
+      "action": "click",
+      "target": "cart icon",
+      "nova_act_prompt": "Click the cart icon in the top right corner",
+      "expected": "Cart drawer or page opens showing 1 item"
+    },
+    {
+      "index": 2,
+      "name": "Proceed to checkout",
+      "action": "click",
+      "target": "Proceed to Checkout button",
+      "nova_act_prompt": "Click 'Proceed to Checkout'",
+      "expected": "Checkout page loads with shipping address form"
+    },
+    {
+      "index": 3,
+      "name": "Fill shipping address",
+      "action": "fill_form",
+      "target": "shipping address form",
+      "nova_act_prompt": "Fill in the shipping address: John Doe, 123 Main St, San Francisco, CA 94105",
+      "expected": "All address fields populated, form valid"
+    },
+    {
+      "index": 4,
+      "name": "Select shipping method",
+      "action": "select",
+      "target": "Standard Shipping option",
+      "nova_act_prompt": "Select 'Standard Shipping ($5.99)' and click Continue",
+      "expected": "Shipping method selected, subtotal updated"
+    },
+    {
+      "index": 5,
+      "name": "Enter payment details",
+      "action": "fill_form",
+      "target": "payment form",
+      "nova_act_prompt": "Enter test card number 4111111111111111, expiry 12/27, CVV 123",
+      "expected": "Payment form filled and validated"
+    },
+    {
+      "index": 6,
+      "name": "Review order",
+      "action": "verify",
+      "target": "order summary",
+      "nova_act_prompt": "Verify the order summary shows the correct item, shipping, and total",
+      "expected": "Order summary matches expected values"
+    },
+    {
+      "index": 7,
+      "name": "Place order",
+      "action": "click",
+      "target": "Place Order button",
+      "nova_act_prompt": "Click 'Place Order'",
+      "expected": "Order confirmation page with order number"
+    }
+  ],
+  "seeded_bugs": []
+}

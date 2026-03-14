@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.next/
+artifacts/screenshots/
+*.env
+.env.local
+.DS_Store
+__pycache__/
+*.pyc

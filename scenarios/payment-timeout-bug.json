@@ -1,0 +1,64 @@
+{
+  "id": "payment-timeout-bug",
+  "name": "Payment Gateway 504 Timeout",
+  "description": "Payment processing times out with a 504 error. The gateway is slow to respond and the client timeout is too aggressive.",
+  "steps": [
+    {
+      "index": 0,
+      "name": "Add item to cart",
+      "action": "navigate_and_click",
+      "target": "product → Add to Cart",
+      "nova_act_prompt": "Add 'Wireless Mouse' to cart",
+      "expected": "Item added"
+    },
+    {
+      "index": 1,
+      "name": "Proceed to checkout",
+      "action": "click",
+      "target": "Proceed to Checkout",
+      "nova_act_prompt": "Proceed to checkout",
+      "expected": "Checkout loads"
+    },
+    {
+      "index": 2,
+      "name": "Fill shipping",
+      "action": "fill_form",
+      "target": "address form",
+      "nova_act_prompt": "Fill: Dan Brown, 42 River Rd, Austin, TX 78701",
+      "expected": "Address filled"
+    },
+    {
+      "index": 3,
+      "name": "Select shipping",
+      "action": "select",
+      "target": "shipping method",
+      "nova_act_prompt": "Select Express Shipping, continue",
+      "expected": "Shipping selected"
+    },
+    {
+      "index": 4,
+      "name": "Enter payment",
+      "action": "fill_form",
+      "target": "payment form",
+      "nova_act_prompt": "Enter card 4000000000000002, expiry 01/28, CVV 999",
+      "expected": "Payment filled"
+    },
+    {
+      "index": 5,
+      "name": "Place order",
+      "action": "click",
+      "target": "Place Order",
+      "nova_act_prompt": "Click 'Place Order'",
+      "expected": "Order confirmed"
+    }
+  ],
+  "seeded_bugs": [
+    {
+      "id": "payment_504",
+      "name": "Payment gateway timeout",
+      "description": "POST /api/payments/charge returns 504 after 30s. Gateway is under load and client timeout is 30s.",
+      "trigger_step": 5,
+      "failure_type": "payment_gateway_timeout"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "id": "pickup-shipping-fee-bug",
+  "name": "Pickup Selection Still Shows Shipping Fee",
+  "description": "Select in-store pickup but the order total still includes a shipping fee because the fee removal only triggers on 'free_shipping' flag, not 'pickup'.",
+  "steps": [
+    {
+      "index": 0,
+      "name": "Add item to cart",
+      "action": "navigate_and_click",
+      "target": "product → Add to Cart",
+      "nova_act_prompt": "Add 'Laptop Stand' to cart",
+      "expected": "Item in cart"
+    },
+    {
+      "index": 1,
+      "name": "Proceed to checkout",
+      "action": "click",
+      "target": "Proceed to Checkout",
+      "nova_act_prompt": "Open cart and click 'Proceed to Checkout'",
+      "expected": "Checkout page"
+    },
+    {
+      "index": 2,
+      "name": "Fill shipping address",
+      "action": "fill_form",
+      "target": "address form",
+      "nova_act_prompt": "Fill: Bob Wilson, 321 Pine St, Seattle, WA 98101",
+      "expected": "Address filled"
+    },
+    {
+      "index": 3,
+      "name": "Select in-store pickup",
+      "action": "select",
+      "target": "delivery method",
+      "nova_act_prompt": "Select 'In-Store Pickup' instead of shipping",
+      "expected": "Pickup selected, shipping fee removed"
+    },
+    {
+      "index": 4,
+      "name": "Verify no shipping fee",
+      "action": "verify",
+      "target": "order summary",
+      "nova_act_prompt": "Check that the order summary does NOT include a shipping fee",
+      "expected": "No shipping fee line, or $0.00 shipping"
+    },
+    {
+      "index": 5,
+      "name": "Enter payment",
+      "action": "fill_form",
+      "target": "payment form",
+      "nova_act_prompt": "Enter card 4111111111111111, expiry 06/28, CVV 789",
+      "expected": "Payment filled"
+    },
+    {
+      "index": 6,
+      "name": "Place order",
+      "action": "click",
+      "target": "Place Order",
+      "nova_act_prompt": "Click 'Place Order'",
+      "expected": "Order placed with no shipping fee"
+    }
+  ],
+  "seeded_bugs": [
+    {
+      "id": "pickup_shipping_fee",
+      "name": "Pickup still charges shipping",
+      "description": "Shipping fee removal checks for deliveryMethod === 'free_shipping' but pickup sets it to 'pickup', so the $5.99 fee persists",
+      "trigger_step": 4,
+      "failure_type": "pricing_mismatch"
+    }
+  ]
+}

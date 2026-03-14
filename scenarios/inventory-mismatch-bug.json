@@ -1,0 +1,64 @@
+{
+  "id": "inventory-mismatch-bug",
+  "name": "Inventory Mismatch at Final Reserve",
+  "description": "Item shows in stock during browsing but inventory reservation fails at order placement because cached stock count is stale.",
+  "steps": [
+    {
+      "index": 0,
+      "name": "Add item to cart",
+      "action": "navigate_and_click",
+      "target": "product → Add to Cart",
+      "nova_act_prompt": "Add 'Mechanical Keyboard' to cart (shows 'In Stock')",
+      "expected": "Item added, stock badge shows available"
+    },
+    {
+      "index": 1,
+      "name": "Proceed to checkout",
+      "action": "click",
+      "target": "Proceed to Checkout",
+      "nova_act_prompt": "Proceed to checkout",
+      "expected": "Checkout loads"
+    },
+    {
+      "index": 2,
+      "name": "Fill shipping",
+      "action": "fill_form",
+      "target": "address form",
+      "nova_act_prompt": "Fill: Carol Davis, 555 Broadway, New York, NY 10012",
+      "expected": "Address filled"
+    },
+    {
+      "index": 3,
+      "name": "Select shipping",
+      "action": "select",
+      "target": "shipping method",
+      "nova_act_prompt": "Select Standard Shipping, continue",
+      "expected": "Shipping selected"
+    },
+    {
+      "index": 4,
+      "name": "Enter payment",
+      "action": "fill_form",
+      "target": "payment form",
+      "nova_act_prompt": "Enter card 4242424242424242, expiry 09/27, CVV 555",
+      "expected": "Payment filled"
+    },
+    {
+      "index": 5,
+      "name": "Place order",
+      "action": "click",
+      "target": "Place Order",
+      "nova_act_prompt": "Click 'Place Order'",
+      "expected": "Order confirmed"
+    }
+  ],
+  "seeded_bugs": [
+    {
+      "id": "inventory_stale_cache",
+      "name": "Stale inventory cache",
+      "description": "Product listing uses a 5-minute cached stock count, but the real inventory was depleted. Reserve call at checkout returns 409 Conflict.",
+      "trigger_step": 5,
+      "failure_type": "inventory_reservation_failure"
+    }
+  ]
+}
