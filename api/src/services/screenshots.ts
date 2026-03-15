@@ -68,7 +68,9 @@ function renderPage(ctx: ScreenshotContext): string {
     return reviewPage(ctx);
   }
   if (name.includes("place order")) {
-    return isFailed ? orderErrorPage(ctx) : orderConfirmPage(ctx);
+    if (isFailed) return orderErrorPage(ctx);
+    if (ctx.status === "running") return reviewPage(ctx);
+    return orderConfirmPage(ctx);
   }
   // Fallback
   return checkoutGenericPage(ctx);
