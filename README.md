@@ -120,14 +120,14 @@ If you ran `npm run seed:demos`, the landing page bug catalog cards link directl
 
 ## Scenarios
 
-| Scenario | Bug | Category | Severity |
-|----------|-----|----------|----------|
-| Standard Checkout | None (happy path) | — | — |
-| Promo Code Disappears | State key mismatch | promotion_state_bug | High |
-| ZIP Code Validation | Leading-zero rejection | address_validation_bug | Critical |
-| Pickup Shipping Fee | Condition mismatch | pricing_mismatch | High |
-| Inventory Mismatch | Stale cache | inventory_reservation_failure | High |
-| Payment Timeout | Gateway 504 | payment_gateway_timeout | Critical |
+| Scenario              | Bug                    | Category                      | Severity |
+|-----------------------|------------------------|-------------------------------|----------|
+| Standard Checkout     | None (happy path)      | —                             | —        |
+| Promo Code Disappears | State key mismatch     | promotion_state_bug           | High     |
+| ZIP Code Validation   | Leading-zero rejection | address_validation_bug        | Critical |
+| Pickup Shipping Fee   | Condition mismatch     | pricing_mismatch              | High     |
+| Inventory Mismatch    | Stale cache            | inventory_reservation_failure | High     |
+| Payment Timeout       | Gateway 504            | payment_gateway_timeout       | Critical |
 
 ## Seeded Bugs
 
@@ -264,13 +264,13 @@ The worker polls a Redis queue for run jobs. When you start a run via the UI, th
 
 #### How the bugs work in the storefront
 
-| Bug ID | Page | What happens |
-|--------|------|--------------|
-| `promo_key_mismatch` | Review | Cart stores discount as `promoCode`, review page reads `couponCode` — discount silently drops, console logs TypeError |
-| `zip_leading_zero` | Shipping | Server-side `parseInt('01103')` strips leading zero, fails 5-digit validation |
-| `pickup_shipping_fee` | Review | Shipping fee check only matches `free_shipping`, not `pickup` — $5.99 fee stays |
-| `inventory_stale_cache` | Review | `/api/inventory/reserve` returns 409 Conflict, shows out-of-stock error |
-| `payment_504` | Review | `/api/payments/charge` delays 5s then returns 504 gateway timeout |
+| Bug ID                  | Page     | What happens                                                                                                          |
+|-------------------------|----------|-----------------------------------------------------------------------------------------------------------------------|
+| `promo_key_mismatch`    | Review   | Cart stores discount as `promoCode`, review page reads `couponCode` — discount silently drops, console logs TypeError |
+| `zip_leading_zero`      | Shipping | Server-side `parseInt('01103')` strips leading zero, fails 5-digit validation                                         |
+| `pickup_shipping_fee`   | Review   | Shipping fee check only matches `free_shipping`, not `pickup` — $5.99 fee stays                                       |
+| `inventory_stale_cache` | Review   | `/api/inventory/reserve` returns 409 Conflict, shows out-of-stock error                                               |
+| `payment_504`           | Review   | `/api/payments/charge` delays 5s then returns 504 gateway timeout                                                     |
 
 **Without Nova Act:** The API handles execution in simulated mode with realistic timing (1.5–3.5s per step) and generates SVG mockup screenshots that look like real checkout pages. This is the default behavior and is fully functional for demos.
 
