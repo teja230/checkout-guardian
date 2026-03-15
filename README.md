@@ -149,20 +149,14 @@ Nova 2 Lite analyzes failed checkout runs and generates structured triage report
 
 #### Step 1: Configure AWS credentials
 
-If you already have the AWS CLI configured, you're set. Otherwise:
+The AWS SDK automatically loads credentials from `~/.aws/credentials` (set up via `aws configure`). No need to put keys in `.env`.
 
 ```bash
-# Option A: Use AWS CLI (recommended)
 aws configure
 # Enter your Access Key ID, Secret Access Key, and set region to us-east-1
-
-# Option B: Set environment variables directly
-export AWS_ACCESS_KEY_ID=your-access-key
-export AWS_SECRET_ACCESS_KEY=your-secret-key
-export AWS_REGION=us-east-1
 ```
 
-Your IAM user/role needs the `bedrock:InvokeModel` permission. Minimal IAM policy:
+Your IAM user/role needs these permissions:
 
 ```json
 {
@@ -170,28 +164,35 @@ Your IAM user/role needs the `bedrock:InvokeModel` permission. Minimal IAM polic
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": "bedrock:InvokeModel",
-      "Resource": "arn:aws:bedrock:us-east-1::foundation-model/us.amazon.nova-2-lite-v1:0"
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": "arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-2-lite-v1:0"
     }
   ]
 }
 ```
 
-#### Step 2: Enable the model in Bedrock
+Or attach the `AmazonBedrockFullAccess` managed policy for broader access.
 
-1. Open the [AWS Bedrock console](https://console.aws.amazon.com/bedrock/) in **us-east-1**
-2. Go to **Model access** in the left sidebar
-3. Click **Manage model access**
-4. Find **Amazon Nova 2 Lite** (`us.amazon.nova-2-lite-v1:0`) and enable it
-5. Wait for the status to show **Access granted** (usually instant)
+#### Step 2: Activate the model
 
-#### Step 3: Set environment variables
+Serverless foundation models in Bedrock are [auto-enabled on first invocation](https://docs.aws.amazon.com/bedrock/latest/userguide/setting-up.html) — no manual model access page needed. To activate:
 
-Add to your `.env` file (or export in your shell):
+1. Open the [Bedrock Chat Playground](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/chat-playground) in **us-east-1**
+2. Select **Amazon Nova 2 Lite** from the model dropdown
+3. Send any message — this first invocation activates the model for your account
+
+Alternatively, invoke the model directly via the [Converse API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Converse.html) or [InvokeModel API](https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_InvokeModel.html).
+
+#### Step 3: Set environment variables (optional)
+
+The defaults work out of the box. Only override if needed:
 
 ```bash
-AWS_REGION=us-east-1
-NOVA_MODEL_ID=us.amazon.nova-2-lite-v1:0   # this is the default, only change if using a different model
+export AWS_REGION=us-east-1                        # default
+export NOVA_MODEL_ID=us.amazon.nova-2-lite-v1:0    # default
 ```
 
 #### Verify it works
@@ -203,7 +204,7 @@ Start a run with a bug enabled. When it fails, check the API logs for:
 [Triage] Parsed successfully: promotion_state_bug (confidence: 0.92)
 ```
 
-If you see `[Triage] Nova 2 Lite call failed: ...` followed by `Falling back to generic triage`, check your credentials and model access.
+If you see `[Triage] Nova 2 Lite call failed: ...` followed by `Falling back to generic triage`, check your credentials and IAM permissions.
 
 **Without Nova 2 Lite:** The app falls back to template-based triage built from the seeded bug metadata and failure artifacts. The triage report will still show root cause, repro steps, and a Jira payload — just without AI-generated analysis.
 
