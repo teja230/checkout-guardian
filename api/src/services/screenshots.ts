@@ -409,7 +409,7 @@ function paymentPage(ctx: ScreenshotContext): string {
   <!-- Card number -->
   <text x="80" y="270" font-family="system-ui,sans-serif" font-size="12" fill="#475569" font-weight="500">Card Number</text>
   <rect x="80" y="278" width="700" height="42" rx="6" fill="white" stroke="#d1d5db"/>
-  <text x="96" y="304" font-family="system-ui,sans-serif" font-size="14" fill="#1e293b" font-family="monospace">4111  1111  1111  1111</text>
+  <text x="96" y="304" font-family="monospace" font-size="14" fill="#1e293b">4111  1111  1111  1111</text>
   <text x="740" y="304" font-family="system-ui,sans-serif" font-size="11" fill="#94a3b8" text-anchor="end">VISA</text>
   <!-- Expiry + CVV row -->
   <text x="80" y="345" font-family="system-ui,sans-serif" font-size="12" fill="#475569" font-weight="500">Expiry Date</text>
@@ -557,7 +557,7 @@ function orderErrorPage(ctx: ScreenshotContext): string {
   ${isPayment ? '<text x="640" y="355" font-family="system-ui,sans-serif" font-size="13" fill="#ef4444" text-anchor="middle" font-weight="500">Please check your bank statement before retrying.</text>' : ''}
   <!-- Error code -->
   <rect x="440" y="380" width="400" height="32" rx="6" fill="#fef2f2"/>
-  <text x="640" y="401" font-family="system-ui,sans-serif" font-size="12" fill="#ef4444" text-anchor="middle" font-family="monospace">${esc(errorCode)}</text>
+  <text x="640" y="401" font-family="monospace" font-size="12" fill="#ef4444" text-anchor="middle">${esc(errorCode)}</text>
   <!-- Buttons -->
   <rect x="390" y="440" width="220" height="44" rx="8" fill="#ef4444"/>
   <text x="500" y="467" font-family="system-ui,sans-serif" font-size="14" fill="white" text-anchor="middle" font-weight="600">Try Again</text>

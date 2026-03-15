@@ -97,7 +97,6 @@ export default function RunPage() {
 
         if (data.status === "running") {
           setCurrentAction(data.name || "");
-          setActiveStepIndex(data.stepIndex);
         }
         if (data.screenshotPath) {
           setActiveScreenshot(data.screenshotPath);

@@ -102,16 +102,28 @@ export async function runScenario(
       continue;
     }
 
+    // Generate a "running" screenshot showing the page state at the start of this step
+    const runningScreenshotCtx: ScreenshotContext = {
+      runId,
+      stepIndex: step.index,
+      stepName: step.name,
+      action: step.action || "unknown",
+      status: "running",
+      scenarioId: scenario.id,
+    };
+    const runningScreenshotPath = await captureScreenshot(runningScreenshotCtx);
+
     // Mark step as running
     await query(
-      "UPDATE run_steps SET status = 'running', started_at = NOW() WHERE run_id = $1 AND step_index = $2",
-      [runId, step.index]
+      "UPDATE run_steps SET status = 'running', screenshot_path = $3, started_at = NOW() WHERE run_id = $1 AND step_index = $2",
+      [runId, step.index, runningScreenshotPath]
     );
     await publishRunUpdate(runId, {
       type: "step_update",
       stepIndex: step.index,
       status: "running",
       name: step.name,
+      screenshotPath: runningScreenshotPath,
     });
 
     // Simulate execution time

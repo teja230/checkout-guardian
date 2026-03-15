@@ -63,7 +63,7 @@ export default function LandingPage() {
               onClick={() => router.push("/scenarios")}
               className="px-6 py-3 bg-gradient-to-r from-blue-600 to-violet-600 text-white rounded-lg font-medium hover:from-blue-500 hover:to-violet-500 transition-all shadow-lg shadow-blue-500/25"
             >
-              Run Demo Scenario
+              Run Scenario
             </button>
             <button
               onClick={() => router.push("/runs")}
