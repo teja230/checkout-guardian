@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DemoStore — <%= title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <a href="/" class="text-xl font-bold text-indigo-600">DemoStore</a>
+      <div class="flex items-center gap-4">
+        <a href="/cart" class="relative text-gray-600 hover:text-gray-900">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+          </svg>
+          <span id="cart-badge" class="hidden absolute -top-1 -right-2 bg-indigo-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">1</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Checkout progress bar -->
+  <% if (typeof step !== 'undefined' && step > 0) { %>
+  <div class="bg-white border-b border-gray-100">
+    <div class="max-w-4xl mx-auto px-4 py-3">
+      <div class="flex items-center justify-between text-sm">
+        <% const steps = ['Cart', 'Shipping', 'Payment', 'Review']; %>
+        <% steps.forEach((s, i) => { %>
+          <div class="flex items-center gap-2 <%= i + 1 <= step ? 'text-indigo-600 font-medium' : 'text-gray-400' %>">
+            <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold <%= i + 1 < step ? 'bg-indigo-600 text-white' : i + 1 === step ? 'border-2 border-indigo-600 text-indigo-600' : 'border border-gray-300 text-gray-400' %>">
+              <% if (i + 1 < step) { %>&#10003;<% } else { %><%= i + 1 %><% } %>
+            </span>
+            <%= s %>
+          </div>
+          <% if (i < steps.length - 1) { %>
+            <div class="flex-1 h-px mx-3 <%= i + 1 < step ? 'bg-indigo-600' : 'bg-gray-200' %>"></div>
+          <% } %>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- Main content -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <%- body %>
+  </main>
+
+  <!-- Bug init script: stores active bugs from query param into sessionStorage -->
+  <script>
+    (function() {
+      const params = new URLSearchParams(window.location.search);
+      const bugs = params.get('bugs');
+      if (bugs) {
+        sessionStorage.setItem('activeBugs', bugs);
+      }
+      // Show cart badge if cart has items
+      if (sessionStorage.getItem('cartItem')) {
+        const badge = document.getElementById('cart-badge');
+        if (badge) badge.classList.remove('hidden');
+      }
+    })();
+    function getActiveBugs() {
+      return sessionStorage.getItem('activeBugs') || '';
+    }
+    function hasBug(bugId) {
+      return getActiveBugs().split(',').includes(bugId);
+    }
+  </script>
+</body>
+</html>

@@ -8,3 +8,6 @@ artifacts/screenshots/
 __pycache__/
 *.pyc
 .idea
+.env
+storefront/package-lock.json
+api/package-lock.json

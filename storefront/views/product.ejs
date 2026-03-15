@@ -1,0 +1,50 @@
+<%- include('layout', { title: 'Shop', step: 0, body: `
+<div class="grid md:grid-cols-2 gap-8">
+  <div class="bg-white rounded-lg p-8 flex items-center justify-center border border-gray-200">
+    <div class="text-center">
+      <svg class="w-48 h-48 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+      <p class="text-sm text-gray-400 mt-2">Product Image</p>
+    </div>
+  </div>
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Wireless Bluetooth Headphones</h1>
+    <div class="flex items-center gap-2 mb-4">
+      <div class="flex text-yellow-400">★★★★☆</div>
+      <span class="text-sm text-gray-500">(128 reviews)</span>
+    </div>
+    <p class="text-3xl font-bold text-gray-900 mb-4">$79.99</p>
+    <p class="text-gray-600 mb-6">Premium wireless headphones with active noise cancellation, 30-hour battery life, and comfortable over-ear design.</p>
+    <button id="add-to-cart-btn" onclick="addToCart()" class="w-full py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">
+      Add to Cart
+    </button>
+    <div id="added-msg" class="hidden mt-3 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center">
+      Added to cart!
+      <a href="/cart" class="ml-2 underline font-medium">View Cart</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Store bugs from query param on initial load
+  const params = new URLSearchParams(window.location.search);
+  const bugs = params.get("bugs");
+  if (bugs) sessionStorage.setItem("activeBugs", bugs);
+
+  function addToCart() {
+    fetch("/api/cart/add", { method: "POST", headers: { "Content-Type": "application/json" } })
+      .then(r => r.json())
+      .then(data => {
+        sessionStorage.setItem("cartItem", JSON.stringify(data));
+        document.getElementById("add-to-cart-btn").textContent = "Added ✓";
+        document.getElementById("add-to-cart-btn").disabled = true;
+        document.getElementById("add-to-cart-btn").classList.add("bg-green-600", "hover:bg-green-600");
+        document.getElementById("add-to-cart-btn").classList.remove("bg-indigo-600", "hover:bg-indigo-700");
+        document.getElementById("added-msg").classList.remove("hidden");
+        const badge = document.getElementById("cart-badge");
+        if (badge) badge.classList.remove("hidden");
+      });
+  }
+</script>
+` }) %>

@@ -1,0 +1,121 @@
+<%- include('layout', { title: 'Shipping', step: 2, body: `
+<h1 class="text-2xl font-bold text-gray-900 mb-6">Shipping Address</h1>
+
+<div class="grid md:grid-cols-3 gap-8">
+  <div class="md:col-span-2">
+    <form id="shipping-form" class="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+          <input type="text" id="firstName" name="firstName" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+          <input type="text" id="lastName" name="lastName" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+      </div>
+      <div>
+        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <input type="email" id="email" name="email" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      </div>
+      <div>
+        <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
+        <input type="text" id="address" name="address" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+      </div>
+      <div class="grid grid-cols-3 gap-4">
+        <div>
+          <label for="city" class="block text-sm font-medium text-gray-700 mb-1">City</label>
+          <input type="text" id="city" name="city" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label for="state" class="block text-sm font-medium text-gray-700 mb-1">State</label>
+          <input type="text" id="state" name="state" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label for="zip" class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+          <input type="text" id="zip" name="zip" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+      </div>
+      <div id="zip-error" class="hidden text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3"></div>
+
+      <!-- Delivery method -->
+      <div class="pt-4 border-t border-gray-200">
+        <h3 class="text-sm font-medium text-gray-700 mb-3">Delivery Method</h3>
+        <div class="space-y-2">
+          <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+            <input type="radio" name="deliveryMethod" value="standard" checked class="text-indigo-600" />
+            <div class="flex-1"><span class="text-sm font-medium">Standard Shipping</span><span class="text-xs text-gray-500 ml-2">5–7 business days</span></div>
+            <span class="text-sm font-medium">$5.99</span>
+          </label>
+          <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+            <input type="radio" name="deliveryMethod" value="express" class="text-indigo-600" />
+            <div class="flex-1"><span class="text-sm font-medium">Express Shipping</span><span class="text-xs text-gray-500 ml-2">2–3 business days</span></div>
+            <span class="text-sm font-medium">$12.99</span>
+          </label>
+          <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+            <input type="radio" name="deliveryMethod" value="pickup" class="text-indigo-600" />
+            <div class="flex-1"><span class="text-sm font-medium">In-Store Pickup</span><span class="text-xs text-gray-500 ml-2">Ready in 2 hours</span></div>
+            <span class="text-sm font-medium">Free</span>
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" class="w-full py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">
+        Continue to Payment
+      </button>
+    </form>
+  </div>
+
+  <!-- Mini order summary -->
+  <div class="bg-white rounded-lg border border-gray-200 p-6 h-fit">
+    <h2 class="font-bold text-gray-900 mb-3">Order Summary</h2>
+    <div class="text-sm text-gray-600">
+      <p>Wireless Bluetooth Headphones</p>
+      <p class="font-medium text-gray-900">$79.99</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById("shipping-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const zip = document.getElementById("zip").value.trim();
+    const zipError = document.getElementById("zip-error");
+    zipError.classList.add("hidden");
+
+    // Validate address via API (ZIP bug triggers server-side)
+    fetch("/api/address/validate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ zip: zip, activeBugs: getActiveBugs() })
+    })
+    .then(r => {
+      if (!r.ok) return r.json().then(data => { throw data; });
+      return r.json();
+    })
+    .then(() => {
+      // Store shipping info
+      const method = document.querySelector('input[name="deliveryMethod"]:checked').value;
+      const shippingFees = { standard: 5.99, express: 12.99, pickup: 0 };
+      sessionStorage.setItem("shippingAddress", JSON.stringify({
+        firstName: document.getElementById("firstName").value,
+        lastName: document.getElementById("lastName").value,
+        address: document.getElementById("address").value,
+        city: document.getElementById("city").value,
+        state: document.getElementById("state").value,
+        zip: zip
+      }));
+      sessionStorage.setItem("deliveryMethod", method);
+      sessionStorage.setItem("shippingFee", shippingFees[method] || 5.99);
+
+      window.location.href = "/payment";
+    })
+    .catch(err => {
+      console.error("ValidationError: ZIP code must be 5 digits, got " + String(parseInt(zip, 10)).length);
+      console.error("Error: Address validation failed for field 'postalCode'");
+      zipError.textContent = err.message || "Address validation failed";
+      zipError.classList.remove("hidden");
+    });
+  });
+</script>
+` }) %>

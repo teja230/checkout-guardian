@@ -14,3 +14,8 @@ export function publishRunUpdate(runId: string, data: any) {
     JSON.stringify({ runId, ...data })
   );
 }
+
+// Job queue for the Nova Act worker
+export function enqueueRun(runId: string) {
+  return redis.lpush("queue:runs", JSON.stringify({ runId }));
+}

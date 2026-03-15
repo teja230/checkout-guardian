@@ -1,0 +1,193 @@
+<%- include('layout', { title: 'Review Order', step: 4, body: `
+<h1 class="text-2xl font-bold text-gray-900 mb-6">Review Your Order</h1>
+
+<div class="grid md:grid-cols-3 gap-8">
+  <div class="md:col-span-2 space-y-4">
+    <!-- Shipping info -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+      <h2 class="font-bold text-gray-900 mb-2">Shipping Address</h2>
+      <p id="review-address" class="text-sm text-gray-600"></p>
+      <p id="review-delivery" class="text-sm text-gray-500 mt-1"></p>
+    </div>
+
+    <!-- Payment info -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+      <h2 class="font-bold text-gray-900 mb-2">Payment Method</h2>
+      <p id="review-payment" class="text-sm text-gray-600"></p>
+    </div>
+
+    <!-- Cart item -->
+    <div class="bg-white rounded-lg border border-gray-200 p-6">
+      <h2 class="font-bold text-gray-900 mb-3">Items</h2>
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 bg-gray-100 rounded flex items-center justify-center text-gray-400">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16" /></svg>
+        </div>
+        <div class="flex-1">
+          <p class="font-medium text-gray-900">Wireless Bluetooth Headphones</p>
+          <p class="text-sm text-gray-500">Qty: 1</p>
+        </div>
+        <p class="font-medium">$79.99</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order total -->
+  <div>
+    <div class="bg-white rounded-lg border border-gray-200 p-6 sticky top-4">
+      <h2 class="font-bold text-gray-900 mb-4">Order Total</h2>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between"><span class="text-gray-600">Subtotal</span><span>$79.99</span></div>
+        <div id="review-discount-line" class="hidden flex justify-between text-green-600"><span id="review-discount-label">Discount</span><span id="review-discount-amount"></span></div>
+        <div class="flex justify-between"><span class="text-gray-600">Shipping</span><span id="review-shipping">$5.99</span></div>
+        <hr class="my-2" />
+        <div class="flex justify-between font-bold text-lg"><span>Total</span><span id="review-total">$85.98</span></div>
+      </div>
+      <button id="place-order-btn" onclick="placeOrder()" class="w-full mt-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors">
+        Place Order
+      </button>
+      <div id="order-error" class="hidden mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"></div>
+      <div id="order-loading" class="hidden mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-700 text-sm text-center">
+        Processing payment...
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const subtotal = 79.99;
+  let shippingFee = parseFloat(sessionStorage.getItem("shippingFee") || "5.99");
+  const deliveryMethod = sessionStorage.getItem("deliveryMethod") || "standard";
+
+  // --- BUG: pickup_shipping_fee ---
+  // When pickup is selected, shipping should be $0. But the bug only checks for
+  // deliveryMethod === "free_shipping", not "pickup", so the fee stays.
+  if (hasBug("pickup_shipping_fee")) {
+    // Bug: only removes fee for "free_shipping", not "pickup"
+    if (deliveryMethod === "free_shipping") {
+      shippingFee = 0;
+    }
+    // pickup fee NOT removed — that is the bug
+    if (deliveryMethod === "pickup") {
+      console.warn("Warning: ShippingCalculator received deliveryMethod='pickup' but no handler matched");
+    }
+  } else {
+    // Correct behavior: pickup = free
+    if (deliveryMethod === "pickup") {
+      shippingFee = 0;
+    }
+  }
+
+  // --- BUG: promo_key_mismatch ---
+  // Cart stores promo under "promoCode", but this page reads "couponCode" when bug is active
+  let promo = null;
+  if (hasBug("promo_key_mismatch")) {
+    // Bug: reads wrong key
+    const raw = sessionStorage.getItem("couponCode");
+    if (!raw) {
+      try {
+        const discountAmount = JSON.parse(raw);
+        // This will throw because raw is null
+        console.log("Discount:", discountAmount);
+      } catch(e) {
+        console.error("TypeError: Cannot read properties of undefined (reading 'discountAmount')");
+        console.warn("Warning: couponCode is undefined in PaymentContext");
+      }
+    }
+    // promo stays null — discount silently dropped
+  } else {
+    // Correct: reads "promoCode"
+    const raw = sessionStorage.getItem("promoCode");
+    if (raw) promo = JSON.parse(raw);
+  }
+
+  // Render discount
+  let discount = 0;
+  if (promo) {
+    discount = subtotal * promo.discount;
+    document.getElementById("review-discount-line").classList.remove("hidden");
+    document.getElementById("review-discount-label").textContent = promo.label;
+    document.getElementById("review-discount-amount").textContent = "-$" + discount.toFixed(2);
+  }
+
+  // Render shipping
+  document.getElementById("review-shipping").textContent = shippingFee === 0 ? "Free" : "$" + shippingFee.toFixed(2);
+
+  // Render total
+  const total = subtotal - discount + shippingFee;
+  document.getElementById("review-total").textContent = "$" + total.toFixed(2);
+
+  // Render address
+  try {
+    const addr = JSON.parse(sessionStorage.getItem("shippingAddress") || "{}");
+    document.getElementById("review-address").textContent =
+      (addr.firstName || "") + " " + (addr.lastName || "") + ", " +
+      (addr.address || "") + ", " + (addr.city || "") + " " + (addr.state || "") + " " + (addr.zip || "");
+  } catch(e) {}
+  const methodLabels = { standard: "Standard Shipping (5-7 days)", express: "Express Shipping (2-3 days)", pickup: "In-Store Pickup (2 hours)" };
+  document.getElementById("review-delivery").textContent = methodLabels[deliveryMethod] || deliveryMethod;
+
+  // Render payment
+  try {
+    const pay = JSON.parse(sessionStorage.getItem("paymentInfo") || "{}");
+    document.getElementById("review-payment").textContent = "Card ending in " + (pay.cardLast4 || "****") + " | Exp " + (pay.expiry || "");
+  } catch(e) {}
+
+  // Place order
+  function placeOrder() {
+    const btn = document.getElementById("place-order-btn");
+    const errorDiv = document.getElementById("order-error");
+    const loadingDiv = document.getElementById("order-loading");
+    btn.disabled = true;
+    btn.classList.add("opacity-50");
+    errorDiv.classList.add("hidden");
+    loadingDiv.classList.remove("hidden");
+
+    // Step 1: Reserve inventory
+    fetch("/api/inventory/reserve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ activeBugs: getActiveBugs() })
+    })
+    .then(r => {
+      if (!r.ok) return r.json().then(data => { throw { type: "inventory", ...data }; });
+      return r.json();
+    })
+    .then(() => {
+      // Step 2: Charge payment
+      return fetch("/api/payments/charge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: total, activeBugs: getActiveBugs() })
+      });
+    })
+    .then(r => {
+      if (!r.ok) return r.json().then(data => { throw { type: "payment", ...data }; });
+      return r.json();
+    })
+    .then(data => {
+      // Success
+      sessionStorage.setItem("orderId", data.orderId);
+      window.location.href = "/confirmation";
+    })
+    .catch(err => {
+      loadingDiv.classList.add("hidden");
+      btn.disabled = false;
+      btn.classList.remove("opacity-50");
+
+      if (err.type === "inventory") {
+        console.error("Error: POST /api/inventory/reserve returned 409 Conflict");
+        console.error(JSON.stringify({ error: "insufficient_stock", requested: 1, available: 0 }));
+        errorDiv.textContent = "Sorry, this item is no longer in stock. The inventory cache was stale.";
+      } else if (err.type === "payment") {
+        console.error("Error: POST /api/payments/charge failed with status 504");
+        console.error("TimeoutError: Payment gateway did not respond within 30000ms");
+        errorDiv.textContent = "Payment failed: Gateway timeout (504). Please try again.";
+      } else {
+        errorDiv.textContent = err.message || "An unexpected error occurred.";
+      }
+      errorDiv.classList.remove("hidden");
+    });
+  }
+</script>
+` }) %>

@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { query } from "../db";
-import { publishRunUpdate } from "../redis";
+import { publishRunUpdate, enqueueRun } from "../redis";
 import { runScenario } from "../services/runner";
+
+const USE_LIVE_WORKER = process.env.USE_LIVE_WORKER === "true";
 
 const router = Router();
 
@@ -37,10 +39,16 @@ router.post("/", async (req, res) => {
     );
   }
 
-  // Start execution asynchronously
-  runScenario(runId, scenario.rows[0], activeBugs).catch((err) =>
-    console.error(`Run ${runId} failed:`, err)
-  );
+  if (USE_LIVE_WORKER) {
+    // Push job to Redis queue for the Nova Act Python worker
+    await enqueueRun(runId);
+    console.log(`Run ${runId} queued for Nova Act worker`);
+  } else {
+    // Simulated mode: run in-process
+    runScenario(runId, scenario.rows[0], activeBugs).catch((err) =>
+      console.error(`Run ${runId} failed:`, err)
+    );
+  }
 
   res.status(201).json(run.rows[0]);
 });
