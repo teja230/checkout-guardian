@@ -4,6 +4,8 @@ AI-powered checkout failure detection and triage. Built for the Amazon Nova AI H
 
 **Checkout Guardian** runs e-commerce checkout flows in a real browser using **Amazon Nova Act**, detects failures, captures evidence (screenshots, console errors, network failures), and generates developer-ready triage reports using **Amazon Nova 2 Lite**.
 
+Built for Amazon Nova 2026 Hackathon: https://devpost.com/software/checkout-guardian
+
 ## Architecture
 
 ```
